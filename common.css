@@ -1,0 +1,7 @@
+@font-face{font-family:Fraunces;src:url(a/fraunces.woff2) format("woff2");font-weight:100 900;font-display:swap}
+@font-face{font-family:Inter;src:url(a/inter-400.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url(a/inter-600.woff2) format("woff2");font-weight:600;font-display:swap}
+*{box-sizing:border-box}body{margin:0;font:16px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}img{max-width:100%;display:block}a{color:inherit}
+.d{font-family:Fraunces,Georgia,serif;font-variation-settings:"SOFT" 100,"WONK" 1;letter-spacing:-.02em}
+:focus-visible{outline:3px solid #f2c14e;outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
