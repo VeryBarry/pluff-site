@@ -40,7 +40,7 @@ if(!rm&&matchMedia('(hover:hover) and (pointer:fine)').matches){
 
 // ---------- Marsh at sunset (canvas 2D, 30fps cap) ----------
 const cv=$('#marsh');if(!cv)return;const g=cv.getContext('2d');
-let islands=[],W=0,H=0,DPR=1,HZ=0,blades=[],flies=[],stars=[],birds=[],clouds=[],tree=[];
+let palms=[],islands=[],W=0,H=0,DPR=1,HZ=0,blades=[],flies=[],stars=[],birds=[],clouds=[],tree=[];
 const heroIn=$('#heroIn');
 let px=0,py=0,tpx=0,tpy=0,prog=0,vis=true,time=0;
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -54,7 +54,7 @@ function build(){
   const r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*DPR|0;cv.height=H*DPR|0;g.setTransform(DPR,0,0,DPR,0,0);
   // horizon below hero content so grass never overlaps buttons
   const cb=heroIn?heroIn.getBoundingClientRect().bottom+(scrollY>0?0:0):0;
-  HZ=Math.max(H*(W<700?.66:.62),Math.min(cb+28,H*.86));
+  HZ=Math.max(H*(W<700?.71:.62),Math.min(cb+28,H*.86));
   const mob=W<700;
   blades=[];
   const layers=[ // depth, y base frac of below-horizon, height, count, color
@@ -84,7 +84,15 @@ function build(){
   mk(-40,W*.40,HZ+below*.2,below*.09,[120,112,58],.35,st);mk(W*.72,W+40,HZ+below*.24,below*.11,[120,112,58],.35,st);
   mk(-40,W*.30,HZ+below*.5,below*.16,[86,90,46],.7,st+1);mk(W*.8,W+40,HZ+below*.55,below*.18,[86,90,46],.7,st+1);
   // tree line silhouette (live oaks + palmettos)
-  tree=[];let x=-20;while(x<W+20){const p=Math.random()<.18;tree.push({x,w:p?rnd(14,22):rnd(30,90),h:p?rnd(28,46):rnd(8,22),p});x+=p?rnd(20,60):rnd(18,60)}
+  tree=[];palms=[];let x=-20;while(x<W+20){tree.push({x,w:rnd(30,80),h:rnd(6,14)});x+=rnd(25,70)}
+  const blk=[...document.querySelectorAll('.hero .btns,.hero .lede,.hero h1')].map(e=>e.getBoundingClientRect());
+  const ph=H*(mob?.13:.17);let px0=rnd(0,30);
+  while(px0<W+20){const n=Math.random()<.45?(2+(Math.random()*3|0)):1;
+    for(let k=0;k<n;k++){const xx=px0+k*rnd(10,22);let h=ph*rnd(.45,1);
+      blk.forEach(r=>{if(xx>r.left-30&&xx<r.right+30&&HZ-h<r.bottom+10)h=Math.max(0,HZ-r.bottom-10)});
+      if(h>Math.min(ph*.3,40))palms.push({x:xx,h,lean:rnd(-.18,.18),ph:rnd(0,6.28),s:h/ph*(mob?.8:1)})}
+    px0+=n>1?rnd(90,170):rnd(45,120)}
+  palms.sort((a,b)=>a.h-b.h);
 }
 function draw(){
   const t=prog,tm=time;
@@ -105,9 +113,19 @@ function draw(){
   // birds (egrets)
   g.strokeStyle=rgb(mix([80,40,50],[20,14,24],t),.8);g.lineWidth=1.4;
   birds.forEach(b=>{const x=((b.x+tm*b.v)%(W*1.3))-W*.1+ox*.4,y=b.y+Math.sin(tm*.5+b.ph)*6,f=Math.sin(tm*4+b.ph)*4*b.s,s=8*b.s;g.beginPath();g.moveTo(x-s,y-f);g.quadraticCurveTo(x-s/2,y-2,x,y);g.quadraticCurveTo(x+s/2,y-2,x+s,y-f);g.stroke()});
-  // far tree line
-  g.fillStyle=rgb(mix([110,72,84],[28,20,34],t));
-  tree.forEach(tr=>{const x=tr.x+ox*.12;g.beginPath();if(tr.p){g.fillRect(x+tr.w/2-1,HZ-tr.h,2,tr.h);g.fill();g.strokeStyle=g.fillStyle;g.lineWidth=1.6;g.beginPath();for(let k=0;k<9;k++){const a=-Math.PI+k*Math.PI/8,cx=x+tr.w/2,cy=HZ-tr.h,L=tr.w*.75;g.moveTo(cx,cy);g.quadraticCurveTo(cx+Math.cos(a)*L*.6,cy+Math.sin(a)*L*.7,cx+Math.cos(a)*L,cy+Math.sin(a)*L*.2+L*.35)}g.stroke();g.beginPath()}else{g.ellipse(x+tr.w/2,HZ+1,tr.w/2,tr.h,0,Math.PI,0)}g.fill()});
+  // far tree line: low shrub mass + Sabal palmettos
+  const sil=rgb(mix([92,58,72],[22,16,28],t));g.fillStyle=sil;g.strokeStyle=sil;g.lineCap='round';
+  g.beginPath();tree.forEach(tr=>{const x=tr.x+ox*.12;g.moveTo(x,HZ+1);g.ellipse(x+tr.w/2,HZ+1,tr.w/2,tr.h,0,Math.PI,0)});g.fill();
+  palms.forEach(p=>{const bx=p.x+ox*.12,tx=bx+p.lean*p.h,ty=HZ-p.h,sw=Math.sin(tm*.8+p.ph)*2*p.s;
+    g.lineWidth=Math.max(1.6,3.2*p.s);g.beginPath();g.moveTo(bx,HZ+1);g.quadraticCurveTo(bx+p.lean*p.h*.15,HZ-p.h*.55,tx+sw*.4,ty);g.stroke();
+    const cx=tx+sw*.4,cy=ty,L=(16+10*p.s)*(W<700?.85:1);
+    for(let k=0;k<13;k++){const a=-Math.PI*1.08+k*(Math.PI*1.16/12)+Math.sin(tm*1.1+p.ph+k)*.04;const l=L*(.75+.25*Math.sin(k*1.7+p.ph));
+      const ex=cx+Math.cos(a)*l,ey=cy+Math.sin(a)*l*.55+l*.42*(1-Math.abs(Math.sin(a)))+sw*.3;
+      const mx=cx+Math.cos(a)*l*.55,my=cy+Math.sin(a)*l*.55-2;
+      g.lineWidth=Math.max(1,1.6*p.s);g.beginPath();g.moveTo(cx,cy);g.quadraticCurveTo(mx,my,ex,ey);g.stroke();
+      const nx=-Math.sin(a)*2.2*(.6+p.s*.6),ny=Math.cos(a)*2.2*(.6+p.s*.6);
+      g.beginPath();g.moveTo(cx,cy);g.quadraticCurveTo(mx+nx,my+ny,ex,ey);g.quadraticCurveTo(mx-nx,my-ny,cx,cy);g.fill()}
+    g.beginPath();g.arc(cx,cy+1,2.2*(.6+p.s*.5),0,7);g.fill()});
   // water
   gr=g.createLinearGradient(0,HZ,0,H);gr.addColorStop(0,rgb(mix(hz,[200,110,90],.25)));gr.addColorStop(.35,rgb(mix(m2,[40,30,50],.35)));gr.addColorStop(1,rgb(mix(m1,[10,8,16],.6)));
   g.fillStyle=gr;g.fillRect(0,HZ,W,H-HZ);
