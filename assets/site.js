@@ -27,7 +27,7 @@ function scrollFx(){
 addEventListener('scroll',()=>requestAnimationFrame(scrollFx),{passive:true});addEventListener('resize',scrollFx);scrollFx();
 
 // cursor + magnetic
-if(!rm&&matchMedia('(hover:hover) and (pointer:fine)').matches){
+if(!rm&&$('.cursor')&&matchMedia('(hover:hover) and (pointer:fine)').matches){
   document.body.classList.add('has-cursor');
   const cur=$('.cursor'),dot=$('.dot',cur),ring=$('.ring',cur),lab=$('b',ring);
   let mx=-100,my=-100,rx=-100,ry=-100,ticking=false;
